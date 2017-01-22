@@ -1,0 +1,7 @@
+name: GriefPreventionAddon
+version: 1.0
+main: me.becja10.GriefPreventionAddon.GriefPreventionAddon
+softdepend: [EchoPet]
+depend: [GriefPrevention]
+description: Some addons for GriefPrevention
+  
