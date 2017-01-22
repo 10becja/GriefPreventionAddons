@@ -2,9 +2,12 @@ package me.becja10.GriefPreventionAddon;
 
 import java.util.logging.Logger;
 
+import me.ryanhamshire.GriefPrevention.Claim;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import me.ryanhamshire.GriefPrevention.TextMode;
 import me.ryanhamshire.GriefPrevention.events.CombatStartedEvent;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,6 +17,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.dsh105.echopet.api.EchoPetAPI;
+import com.dsh105.echopet.compat.api.entity.IPet;
+import com.dsh105.echopet.compat.api.event.PetMoveEvent;
 
 public class GriefPreventionAddon extends JavaPlugin implements Listener{
 
@@ -89,5 +94,26 @@ public class GriefPreventionAddon extends JavaPlugin implements Listener{
 			if(echoPet.hasPet(defender))
 				echoPet.removePet(defender, false, false);
 		}
-	}	
+	}
+	
+	@EventHandler
+	public void onPetMove(PetMoveEvent event){
+		IPet pet = event.getPet();
+		if(pet.isOwnerRiding()){
+			Player p = pet.getOwner();
+			Location to = event.getTo();
+			Claim c = griefPrevention.dataStore.getClaimAt(to, true, null);
+			if(c == null)
+				return;
+			String nameID = p.getName() + String.valueOf(c.getID());
+			if(GriefPrevention.getBlocked().contains(nameID)){
+				GriefPrevention.sendMessage(p, TextMode.Err,
+						"You have been recently ejected from this claim. "
+								+ "You must wait before entering again");
+				echoPet.removePet(p, false, false);
+				GriefPrevention.ejected.add(p.getUniqueId());
+				griefPrevention.ejectPlayer(p);
+			}
+		}
+	}
 }
